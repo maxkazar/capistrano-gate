@@ -28,13 +28,18 @@ namespace :gate do
     end
 
     on roles :gate do
-      template = File.read File.expand_path "../../templates/gate.erb", __FILE__
-      config = StringIO.new(ERB.new(template, nil, '-').result(binding))
-      available = File.join(fetch(:nginx_sites_available_path), fetch(:gate_config_name))
-      enabled = File.join(fetch(:nginx_sites_enabled_path), fetch(:gate_config_name))
+      fetch(:gate_domains, [fetch(:gate_domain)]).each do |domain|
+        set :gate_domain, domain
 
-      sudo_upload! config, available
-      sudo :ln, '-fs', "#{available} #{enabled}"
+        template = File.read File.expand_path "../../templates/gate.erb", __FILE__
+        config = StringIO.new(ERB.new(template, nil, '-').result(binding))
+        puts config.read
+        available = File.join(fetch(:nginx_sites_available_path), fetch(:gate_config_name))
+        enabled = File.join(fetch(:nginx_sites_enabled_path), fetch(:gate_config_name))
+
+        sudo_upload! config, available
+        sudo :ln, '-fs', "#{available} #{enabled}"
+      end
     end
   end
 end
