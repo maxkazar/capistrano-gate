@@ -1,6 +1,5 @@
 namespace :load do
   task :defaults do
-    set_if_empty :gate_config_name, -> { "#{fetch(:application)}_#{fetch(:stage)}" }
     set_if_empty :nginx_sites_available_path, '/etc/nginx/sites-available'
     set_if_empty :nginx_sites_enabled_path, '/etc/nginx/sites-enabled'
   end
@@ -30,6 +29,7 @@ namespace :gate do
     on roles :gate do
       fetch(:gate_domains, [fetch(:gate_domain)]).each do |domain|
         set :gate_domain, domain
+        set :gate_config_name, "#{domain.gsub('.', '_')}_#{fetch(:stage)}"
 
         template = File.read File.expand_path "../../templates/gate.erb", __FILE__
         config = StringIO.new(ERB.new(template, nil, '-').result(binding))
