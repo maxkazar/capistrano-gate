@@ -8,7 +8,15 @@ server {
   listen 80;
   listen [::]:80;
   server_name <%= fetch(:gate_domain) %>;
-  return 301 https://$server_name$request_uri;
+
+  root /var/www/html;
+  location /.well-known {
+    rewrite (.*) /..$1 break;
+  }
+
+  location / {
+    return 301 https://$server_name$request_uri;
+  }
 }
 
 server {
